@@ -606,8 +606,29 @@ function renderVector(vector, pdfKitDoc) {
 
 function renderImage(image, x, y, pdfKitDoc) {
 	var opacity = isNumber(image.opacity) ? image.opacity : 1;
+	var rounded = !!image.rounded && image._width === image._height;
+	var radius = image._width / 2;
+	var borderWidth = isNumber(image.borderWidth) ? image.borderWidth : 0;
+	var borderColor = isString(image.borderColor) ? image.borderColor : '#000';
+
 	pdfKitDoc.opacity(opacity);
+
+	if (rounded) {
+			pdfKitDoc.save().circle(x + radius, y + radius, radius).clip();
+	}
+
 	pdfKitDoc.image(image.image, image.x, image.y, { width: image._width, height: image._height });
+
+	if (rounded) {
+			pdfKitDoc.restore();
+	}
+
+	if (borderWidth > 0 && rounded) {
+			pdfKitDoc.circle(x + radius, y + radius, radius - borderWidth / 2)
+					.lineWidth(borderWidth)
+					.strokeColor(borderColor)
+					.stroke();
+	}
 	if (image.link) {
 		pdfKitDoc.link(image.x, image.y, image._width, image._height, image.link);
 	}
